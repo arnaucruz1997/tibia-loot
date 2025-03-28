@@ -3,15 +3,28 @@ import json
 from bs4 import BeautifulSoup
 
 class Items:
-    def __init__(self, nameOutputFile, urls):
+    def __init__(self, nameOutputFile, monsterNames):
         self.itemsdb = json.load(open("items.json"))
         self.itemsToLoot=[]
         self.nameOutputFile = nameOutputFile
-        self.urls = urls
-        for url in urls:
+        self.urls = self.get_url_from_monster_names(monsterNames)
+        for url in self.urls:
             self.get_monster_item_list_from_url(url)
         self.transform_item_names_to_json()
-
+    
+    def get_url_from_monster_names(self, monsterNames):
+        urls = []
+        for monsterName in monsterNames:
+            for word in monsterName.split():
+                word.lower()
+                word.capitalize()
+                monsterName = monsterName.replace(word, word.capitalize())
+            monsterName = monsterName.replace(" ","_")
+            url = "https://tibia.fandom.com/wiki/"+monsterName.replace(" ","_")
+            urls.append(url)
+            print(url)
+        return urls
+    
     def get_monster_item_list_from_url(self, url):
         response = requests.get(url)
         soup = BeautifulSoup(response.text,"html.parser")
@@ -37,15 +50,9 @@ class Items:
             file.write(json_string)
         
 nameOutputFile = "goroma_volcan.json"
-urls = [
-    "https://tibia.fandom.com/wiki/Diabolic_Imp",
-    "https://tibia.fandom.com/wiki/Hellfire_Fighter",
-    "https://tibia.fandom.com/wiki/Demon",
-    "https://tibia.fandom.com/wiki/Dragon_Lord",
-    "https://tibia.fandom.com/wiki/Dragon_Lord_Hatchling",
-]
+monsterNames = ["Diabolic Imp", "Demon", "Demon Skeleton"]
 
-items = Items(nameOutputFile, urls)
+items = Items(nameOutputFile, monsterNames)
 
 
 
